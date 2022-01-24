@@ -6,32 +6,38 @@ import { ToggleFullScreen } from '../FullScreen'
 import Timeout from '../Timeout'
 import Camera from '../Camera'
 import CameraError from '../CameraError'
+import { SdkMetadata } from '~types/commons'
+import Webcam from 'react-webcam-onfido'
+import { WithLocalisedProps, WithTrackingProps } from '~types/hocs'
+import { ErrorProp, RenderFallbackProp } from '~types/routers'
+import { CapturePayload } from '~types/redux'
+import { CameraProps } from '~types/camera'
 
-/* type State = {
-  hasBecomeInactive: boolean,
-  hasCameraError: boolean,
+type State = {
+  hasBecomeInactive: boolean
+  hasCameraError: boolean
   snapshotBuffer: Array<{
-    blob: Blob,
-  }>,
-  isCaptureButtonDisabled: boolean,
+    blob: Blob
+  }>
+  isCaptureButtonDisabled: boolean
+  isProcessingSelfie: boolean
 }
 
 type Props = {
-  translate: (string, ?{}) => string,
-  onCapture: Function,
-  renderFallback: Function,
-  trackScreen: Function,
-  inactiveError: Object,
-  useMultipleSelfieCapture: boolean,
-  snapshotInterval: number,
-} */
+  onCapture: (payload: CapturePayload) => void
+  renderFallback: RenderFallbackProp
+  inactiveError: ErrorProp
+  useMultipleSelfieCapture: boolean
+  snapshotInterval: number
+} & WithTrackingProps &
+  WithLocalisedProps
 
-export default class SelfieCapture extends Component {
-  webcam = null
-  snapshotIntervalId = null
-  initialSnapshotTimeoutId = null
+export default class SelfieCapture extends Component<Props, State> {
+  webcam?: Webcam
+  snapshotIntervalId = 0
+  initialSnapshotTimeoutId = 0
 
-  state = {
+  state: State = {
     hasBecomeInactive: false,
     hasCameraError: false,
     snapshotBuffer: [],
@@ -44,7 +50,7 @@ export default class SelfieCapture extends Component {
   handleCameraError = () =>
     this.setState({ hasCameraError: true, isCaptureButtonDisabled: true })
 
-  handleSelfie = (blob, sdkMetadata) => {
+  handleSelfie = (blob: Blob, sdkMetadata: SdkMetadata) => {
     const selfie = {
       blob,
       sdkMetadata,
@@ -61,7 +67,7 @@ export default class SelfieCapture extends Component {
     this.setState({ isCaptureButtonDisabled: false, isProcessingSelfie: false })
   }
 
-  handleSnapshot = (blob) => {
+  handleSnapshot = (blob: Blob) => {
     // Always try to get the older snapshot to ensure
     // it's different enough from the user initiated selfie
     this.setState(({ snapshotBuffer: [, newestSnapshot] }) => ({
@@ -87,6 +93,10 @@ export default class SelfieCapture extends Component {
   }
 
   takeSelfie = () => {
+    if (!this.webcam) {
+      return
+    }
+
     // If we are already taking the selfie, we should stop taking snapshots to prevent them from being the
     // same as the Selfie itself, causing the multiframe feature to fail.
     this.stopSnapshots()
@@ -98,9 +108,11 @@ export default class SelfieCapture extends Component {
     if (this.props.useMultipleSelfieCapture) {
       // A timeout is required for this.webcam to load, else 'webcam is null' console error is displayed
       const initialSnapshotTimeout = 0
+      //@ts-ignore it uses NodeJS types
       this.initialSnapshotTimeoutId = setTimeout(() => {
         this.takeSnapshot()
       }, initialSnapshotTimeout)
+      //@ts-ignore it uses NodeJS types
       this.snapshotIntervalId = setInterval(
         this.takeSnapshot,
         this.props.snapshotInterval
@@ -130,10 +142,20 @@ export default class SelfieCapture extends Component {
       hasCameraError,
       isCaptureButtonDisabled, // Capture Button is disabled until camera access is allowed + userMedia stream is ready
     } = this.state
+
+    const cameraProps: Omit<CameraProps, 'buttonType'> = {
+      ...this.props,
+    }
+
+    const withTrackingProps: WithTrackingProps = {
+      ...this.props,
+    }
+
     return (
       <Camera
-        {...this.props}
-        webcamRef={(c) => (this.webcam = c)}
+        {...cameraProps}
+        {...withTrackingProps}
+        webcamRef={(ref) => ref && (this.webcam = ref)}
         onUserMedia={this.onUserMedia}
         onError={this.handleCameraError}
         renderError={
