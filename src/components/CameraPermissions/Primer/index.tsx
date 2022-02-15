@@ -25,10 +25,10 @@ const localeKeys = {
     button: 'permission.button_primary_cam',
   },
   microphoneAndCamera: {
-    title: 'permission.title_microphone_cam',
-    subTitle: 'permission.subtitle_microphone_cam',
-    body: 'permission.body_microphone_cam',
-    button: 'permission.button_primary_microphone_cam',
+    title: 'permission.title_both',
+    subTitle: 'permission.subtitle_both',
+    body: 'permission.body_both',
+    button: 'permission.button_primary_both',
   },
 }
 
@@ -62,7 +62,8 @@ const Permissions: FunctionComponent<Props> = ({
         subTitle={translate(locales.subTitle)}
       />
       <div className={style.image}>
-        <div className={style.graphic} />
+        <div className={style.cameraAllow} />
+        <div className={style.microphone} />
       </div>
       <p className={style.instructions}>{translate(locales.body)}</p>
     </ScreenLayout>

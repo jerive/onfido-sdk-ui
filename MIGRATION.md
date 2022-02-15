@@ -2,6 +2,29 @@
 
 The guides below are provided to ease the transition of existing applications using the Onfido SDK from one version to another that introduces breaking API changes.
 
+## `6.17.0` -> `6.18.0`
+
+The **English**, **Spanish**, **German**, **French**, **Italian**, **Dutch** and **Portuguese** copy for the follinw string(s) has changed:
+
+### Added strings
+
+- `permission_recovery.title_both`
+- `permission_recovery.subtitle_both`
+
+- `permission.title_both`
+- `permission.subtitle_both`
+- `permission.body_both`
+- `permission.button_primary_both`
+
+> Below are still in progress:
+- `list_header_both`
+- `list_item_how_both`
+
+### Changed strings
+- `permission_recovery.subtitle_cam`
+- `permission_recovery.list_item_how_both`
+
+
 ## `6.13.0` -> `6.14.0`
 
 The **English**, **Spanish**, **German**, **French**, **Italian** and **Portuguese** copy for the following string(s) has changed:

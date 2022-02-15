@@ -19,9 +19,9 @@ const localeKeys = {
   },
   microphoneAndCamera: {
     title: 'permission_recovery.title_both',
-    subTitle: 'permission_recovery.subtitle_microphone_cam',
-    instructions: 'permission_recovery.list_header_microphone_cam',
-    how_to: 'permission_recovery.list_item_how_to_microphone_cam',
+    subTitle: 'permission_recovery.subtitle_cam', // Need new copy, or use camera string
+    instructions: 'permission_recovery.list_header_cam', // Needs new copy!
+    how_to: 'permission_recovery.list_item_how_to_cam', // Needs new copy
   },
 }
 
