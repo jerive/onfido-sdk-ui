@@ -50,7 +50,7 @@ const SDK_ENV = process.env.SDK_ENV
 
 if (process.env.SDK_ENV === 'Auth') {
   try {
-    import('../Auth/Lazy')
+    import(/* webpackChunkName: "authLazy" */ '../Auth/Lazy')
       .then((lazy) => (LazyAuth = lazy.default))
       .catch(() => null)
   } catch (e) {

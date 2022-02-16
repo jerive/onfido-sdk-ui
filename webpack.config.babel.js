@@ -2,18 +2,13 @@ import webpack from 'webpack'
 import packageJson from './package.json'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
-import TerserPlugin from 'terser-webpack-plugin'
-import autoprefixer from 'autoprefixer'
-import customMedia from 'postcss-custom-media'
-import url from 'postcss-url'
-import mapObject from 'object-loops/map'
-import mapKeys from 'object-loops/map-keys'
 import SpeedMeasurePlugin from 'speed-measure-webpack-plugin'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-import Visualizer from 'webpack-visualizer-plugin'
-import { dirname, relative, resolve, basename } from 'path'
+import Visualizer from 'webpack-visualizer-plugin2'
+import { dirname, relative, resolve } from 'path'
 import nodeExternals from 'webpack-node-externals'
 import CopyPlugin from 'copy-webpack-plugin'
+import TerserPlugin from 'terser-webpack-plugin'
 
 // NODE_ENV can be one of: development | staging | test | production
 const NODE_ENV = process.env.NODE_ENV || 'production'
@@ -24,17 +19,23 @@ const TEST_ENV = process.env.TEST_ENV
 // For production, test, and staging we should build production ready code
 // i.e. fully minified so that testing staging is as realistic as possible
 const PRODUCTION_BUILD = NODE_ENV !== 'development'
-
 const SDK_TOKEN_FACTORY_SECRET = process.env.SDK_TOKEN_FACTORY_SECRET || 'NA'
-
 const SDK_ENV = process.env.SDK_ENV || 'idv'
 
 const baseRules = () => {
   return [
     {
       test: /\.(js|ts)x?$/,
-      loader: 'babel-loader',
-      options: { configFile: resolve('.babelrc') },
+      use: [
+        'thread-loader',
+        {
+          loader: 'babel-loader',
+          options: { configFile: resolve('.babelrc') },
+        },
+      ],
+      resolve: {
+        fullySpecified: false,
+      },
       include: [
         resolve('src'),
         resolve('node_modules/@onfido/castor'),
@@ -67,25 +68,23 @@ const baseStyleLoaders = (modules, withSourceMap) => [
         : modules,
     },
   },
-  {
-    loader: 'postcss-loader',
-    options: {
-      plugins: () => [
-        customMedia({
-          importFrom: `${__dirname}/src/components/Theme/custom-media.css`,
-        }),
-        autoprefixer(),
-        url({ url: 'inline' }),
-      ],
-      sourceMap: withSourceMap,
-    },
-  },
-  {
-    loader: 'sass-loader',
-    options: {
-      sourceMap: withSourceMap,
-    },
-  },
+  ...(modules
+    ? [
+        {
+          loader: 'postcss-loader',
+          options: {
+            // See postcss.config.js for plugins
+            sourceMap: withSourceMap,
+          },
+        },
+        {
+          loader: 'sass-loader',
+          options: {
+            sourceMap: withSourceMap,
+          },
+        },
+      ]
+    : []),
 ]
 
 const baseStyleRules = ({
@@ -105,9 +104,7 @@ const baseStyleRules = ({
     test: /\.(css|scss)$/,
     [rule]: [`${__dirname}/node_modules`],
     use: [
-      disableExtractToFile || !PRODUCTION_BUILD
-        ? 'style-loader'
-        : MiniCssExtractPlugin.loader,
+      disableExtractToFile ? 'style-loader' : MiniCssExtractPlugin.loader,
       ...baseStyleLoaders(modules, withSourceMap),
     ],
   }))
@@ -188,11 +185,13 @@ const CONFIG_MAP = {
 
 const CONFIG = CONFIG_MAP[NODE_ENV]
 
-const formatDefineHash = (defineHash) =>
-  mapObject(
-    mapKeys(defineHash, (key) => `process.env.${key}`),
-    (value) => JSON.stringify(value)
-  )
+const formatDefineHash = (defineHash) => {
+  const formatted = {}
+  Object.entries(defineHash).forEach(([key, value]) => {
+    formatted[`process.env.${key}`] = JSON.stringify(value)
+  })
+  return formatted
+}
 const WOOPRA_WINDOW_KEY = 'onfidoSafeWindow8xmy484y87m239843m20'
 
 const basePlugins = (bundle_name = '') => [
@@ -256,25 +255,18 @@ const baseConfig = {
     },
   },
 
-  optimization: {
-    nodeEnv: false, // otherwise it gets set by mode, see: https://webpack.js.org/concepts/mode/
-  },
-
   stats: {
+    preset: PRODUCTION_BUILD ? 'errors-warnings' : 'normal',
+    errorDetails: PRODUCTION_BUILD,
     colors: true,
-    // Examine all modules
-    maxModules: Infinity,
     // Display bailout reasons
     optimizationBailout: false,
   },
 
   node: {
     global: true,
-    process: false,
-    Buffer: false,
     __filename: false,
     __dirname: false,
-    setImmediate: false,
   },
 
   devtool: PRODUCTION_BUILD ? 'source-map' : 'eval-cheap-module-source-map',
@@ -290,11 +282,13 @@ const configDist = () => ({
   },
 
   output: {
-    library: `Onfido${SDK_ENV === 'Auth' ? SDK_ENV : ''}`,
-    libraryTarget: 'umd',
+    library: {
+      type: 'umd',
+      name: `Onfido${SDK_ENV === 'Auth' ? SDK_ENV : ''}`,
+    },
+    filename: '[name].min.js',
     path: `${__dirname}/dist`,
     publicPath: CONFIG.PUBLIC_PATH,
-    filename: '[name].min.js',
     chunkFilename: `onfido${SDK_ENV === 'Auth' ? SDK_ENV : ''}.[name].min.js`,
   },
   module: {
@@ -303,34 +297,34 @@ const configDist = () => ({
       ...baseStyleRules(),
       {
         test: /\.(svg|woff2?|ttf|eot|jpe?g|png|gif)(\?.*)?$/i,
-        use: ['file-loader?name=images/[name]_[hash:base64:5].[ext]'],
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name]_[hash:5][ext]',
+        },
       },
     ],
   },
 
   optimization: {
+    nodeEnv: false, // otherwise it gets set by mode, see: https://webpack.js.org/concepts/mode/
+    chunkIds: 'named',
+    splitChunks: {
+      cacheGroups: {
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
+          name: (_module, chunks) => {
+            return `vendors~${chunks[0].name}`
+          },
+          reuseExistingChunk: true,
+        },
+      },
+    },
     minimizer: [
       ...(PRODUCTION_BUILD
         ? [
             new TerserPlugin({
-              cache: true,
               parallel: true,
-              sourceMap: true,
-              terserOptions: {
-                output: {
-                  comments: '/^!/',
-                },
-              },
-              extractComments: {
-                condition: /^\**!|@preserve|@license|@cc_on/i,
-                filename: (filename) => {
-                  const filenameNoExtension = basename(filename, '.min.js')
-                  return `${filenameNoExtension}.LICENSES.txt`
-                },
-                banner: (licenseFile) => {
-                  return `License information can be found in ${licenseFile}`
-                },
-              },
             }),
             new webpack.BannerPlugin({
               banner: () => {
@@ -343,7 +337,6 @@ const configDist = () => ({
         : []),
     ],
   },
-
   plugins: [
     ...basePlugins(),
     ...(SDK_ENV === 'Auth'
@@ -358,10 +351,7 @@ const configDist = () => ({
           }),
         ]
       : []),
-    new MiniCssExtractPlugin({
-      filename: 'style.css',
-      chunkFilename: `onfido${SDK_ENV === 'Auth' ? SDK_ENV : ''}.[name].css`,
-    }),
+    // see MiniCssExtractPlugin on the bottom of the file...
     new HtmlWebpackPlugin({
       template: './demo/demo.ejs',
       filename: 'index.html',
@@ -369,7 +359,7 @@ const configDist = () => ({
       inject: 'body',
       JWT_FACTORY: CONFIG.JWT_FACTORY,
       DESKTOP_SYNC_URL: CONFIG.DESKTOP_SYNC_URL,
-      chunks: ['onfido', 'demo'],
+      chunks: [`onfido${SDK_ENV === 'Auth' ? SDK_ENV : ''}`, 'demo'],
     }),
     new HtmlWebpackPlugin({
       template: './demo/previewer.ejs',
@@ -380,23 +370,22 @@ const configDist = () => ({
       DESKTOP_SYNC_URL: CONFIG.DESKTOP_SYNC_URL,
       chunks: ['previewer'],
     }),
-    ...(PRODUCTION_BUILD
-      ? [
-          new webpack.LoaderOptionsPlugin({
-            minimize: true,
-            debug: false,
-          }),
-        ]
-      : []),
   ],
 
   devServer: {
     port: process.env.PORT || 8080,
     host: '0.0.0.0',
-    publicPath: '/',
-    contentBase: './dist',
+    server: {
+      // Enable chrome://flags/#allow-insecure-localhost in Google Chrome to support invalid https certificates
+      type: process.env.HTTPS ? 'https' : 'http',
+    },
+    hot: true,
     historyApiFallback: true,
-    disableHostCheck: true, // necessary to test in IE with virtual box, since it goes through a proxy, see: https://github.com/webpack/webpack-dev-server/issues/882
+    static: './dist',
+    allowedHosts: 'all', // necessary to test in IE with virtual box, since it goes through a proxy, see: https://github.com/webpack/webpack-dev-server/issues/882
+    devMiddleware: {
+      publicPath: '/',
+    },
   },
 })
 
@@ -423,6 +412,13 @@ const configNpmLib = () => ({
       maxChunks: 1,
     }),
   ],
+  optimization: {
+    nodeEnv: false,
+    chunkIds: 'named',
+    splitChunks: {
+      chunks: 'all',
+    },
+  },
   target: 'node',
   externals: [
     nodeExternals({
@@ -434,8 +430,16 @@ const configNpmLib = () => ({
   ],
 })
 
+// Workaround for https://github.com/stephencookdev/speed-measure-webpack-plugin/issues/167
 const smp = new SpeedMeasurePlugin()
+const configWithSpeedMeasures = smp.wrap(configDist())
+configWithSpeedMeasures.plugins.unshift(
+  new MiniCssExtractPlugin({
+    filename: 'style.css',
+    chunkFilename: `onfido${SDK_ENV === 'Auth' ? SDK_ENV : ''}.[name].css`,
+  })
+)
 
 export default SDK_ENV === 'Auth'
-  ? [smp.wrap(configDist())]
-  : [smp.wrap(configDist()), configNpmLib()]
+  ? [configWithSpeedMeasures]
+  : [configWithSpeedMeasures, configNpmLib()]

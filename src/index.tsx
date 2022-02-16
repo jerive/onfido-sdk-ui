@@ -1,7 +1,5 @@
 import { h, render } from 'preact'
-/* eslint-disable-next-line @typescript-eslint/no-var-requires */
-const labels = require('react-phone-number-input/locale/en.json')
-
+import labels from 'react-phone-number-input/locale/en.json'
 import 'custom-event-polyfill'
 
 // TODO: These IE11 polyfills are missing in `development` after the Typescript conversion.
@@ -10,6 +8,10 @@ import 'custom-event-polyfill'
 import 'array-flat-polyfill'
 import 'core-js/es/object/entries'
 import 'core-js/es/object/from-entries'
+import 'core-js/modules/es.promise'
+import 'core-js/modules/es.array.iterator'
+import 'whatwg-fetch'
+import 'core-js/features/promise'
 
 import { noop } from '~utils/func'
 import { upperCase } from '~utils/string'

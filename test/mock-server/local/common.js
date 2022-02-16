@@ -1,4 +1,4 @@
-(function(window) {
+window.onload = function(){
   window.getToken = function() {
     try {
       var xhr = new XMLHttpRequest();
@@ -19,7 +19,4 @@
       containerId: "root"
     });
   }
-
-
-})(window);
-
+}

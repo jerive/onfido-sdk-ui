@@ -13,7 +13,15 @@ This project adheres to the Node [default version scheme](https://docs.npmjs.com
 - Public: Add compatibility with Salesforce
 - Public: Add type `DocumentTypes` to `DocumentResponse`
 
-## [6.18.0] - in progress
+### Changed
+- Internal: Upgraded to webpack 5
+- Internal: Upgraded `eslint`, `mocha`, `jest`
+- Internal: Resolved all deprecated & vulnerability issues by removing and upgrading packages
+- Internal: Added `core-js/modules/es.promise`, `core-js/modules/es.array.iterator`, `whatwg-fetch`, `core-js/features/promise` pollyfills for IE11
+- Public: Removed `dist/*.LICENSE.txt` files, see `licenses.json` instead
+- Public: Fixed `CrossDeviceInfo` screen layout to prevent scrolling
+
+## 6.18.0 - in progress
 
 ### Added
 
