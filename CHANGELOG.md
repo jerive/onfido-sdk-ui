@@ -13,6 +13,11 @@ This project adheres to the Node [default version scheme](https://docs.npmjs.com
 - Public: Add compatibility with Salesforce
 - Public: Add type `DocumentTypes` to `DocumentResponse`
 
+### Changed
+
+- Internal: Refactor selfie capture step to ensure camera is ready before enabling any capture
+- Internal: Update `multipleSelfieCapture` feature to ensure snapshot is taken at a different time than the selfie
+
 ## [6.18.0] - in progress
 
 ### Added
