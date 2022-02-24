@@ -7,22 +7,25 @@ The guides below are provided to ease the transition of existing applications us
 The **English**, **Spanish**, **German**, **French**, **Italian**, **Dutch** and **Portuguese** copy for the follinw string(s) has changed:
 
 ### Added strings
+> Lokalise key added: CFG-29-camera-microphone-permission-screens, _update_22_feb
 
-- `permission_recovery.title_both`
-- `permission_recovery.subtitle_both`
+- `permission_recovery.title_both` (re-used from ios/android) 
+- `permission_recovery.subtitle_both` (re-used from android) 
 
-- `permission.title_both`
-- `permission.subtitle_both`
-- `permission.body_both`
-- `permission.button_primary_both`
+- `permission.title_both` (re-used)
+- `permission.subtitle_both` (re-used)
+- `permission.body_both` (re-used)
+- `permission.button_primary_both` (re-used)
 
 > Below are still in progress:
-- `list_header_both`
-- `list_item_how_both`
+- `permission_recovery.list_header_both` (need to add)
+- `permission_recovery.list_item_how_to_both` (need to add)
 
 ### Changed strings
-- `permission_recovery.subtitle_cam`
-- `permission_recovery.list_item_how_both`
+- `permission_recovery.subtitle_cam` - (!Needs adjustment, temporary: `permission_recovery.subtitle_cam_2`)
+
+onfido::permission_recovery::subtitle_cam
+Recover camera access to continue face verification
 
 
 ## `6.13.0` -> `6.14.0`

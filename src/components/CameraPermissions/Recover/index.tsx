@@ -13,15 +13,15 @@ import type { WithLocalisedProps, WithTrackingProps } from '~types/hocs'
 const localeKeys = {
   camera: {
     title: 'permission_recovery.title_cam',
-    subTitle: 'permission_recovery.subtitle_cam',
+    subTitle: 'permission_recovery.subtitle_cam_2',
     instructions: 'permission_recovery.list_header_cam',
     how_to: 'permission_recovery.list_item_how_to_cam',
   },
   microphoneAndCamera: {
     title: 'permission_recovery.title_both',
-    subTitle: 'permission_recovery.subtitle_cam', // Need new copy, or use camera string
-    instructions: 'permission_recovery.list_header_cam', // Needs new copy!
-    how_to: 'permission_recovery.list_item_how_to_cam', // Needs new copy
+    subTitle: 'permission_recovery.subtitle_both',
+    instructions: 'permission_recovery.list_header_both', // Needs new copy!
+    how_to: 'permission_recovery.list_item_how_to_both', // Needs new copy
   },
 }
 

@@ -61,9 +61,9 @@ const Permissions: FunctionComponent<Props> = ({
         title={translate(locales.title)}
         subTitle={translate(locales.subTitle)}
       />
-      <div className={style.image}>
+      <div className={classNames(style.image, audio ? style.twoImages : '')}>
         <div className={style.cameraAllow} />
-        <div className={style.microphone} />
+        {audio && <div className={style.microphone} />}
       </div>
       <p className={style.instructions}>{translate(locales.body)}</p>
     </ScreenLayout>

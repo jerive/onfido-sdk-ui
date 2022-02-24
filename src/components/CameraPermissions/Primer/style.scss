@@ -35,6 +35,14 @@
   }
 }
 
+.twoImages {
+  max-width: 1.5 * 105.01 * $unit-x-small;
+
+  @media (--small-viewport) {
+    max-width: 2 * 79 * $unit-x-small;
+  }
+}
+
 .reasons {
   font-size: var(--onfido-font-size-small);
 
@@ -69,6 +77,8 @@
 .microphone {
   @extend .graphic;
   background-image: url('./assets/microphone.svg');
+  background-size: 90%;
+  margin-left: 1 * $unit;
 }
 
 .allow {
