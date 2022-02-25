@@ -96,10 +96,6 @@
       },
       {
         "path": "./dist/onfido.crossDevice.min.js",
-        "maxSize": "1.3 kB"
-      },
-      {
-        "path": "./dist/onfido.vendors~crossDevice.min.js",
         "maxSize": "70 kB"
       },
       {

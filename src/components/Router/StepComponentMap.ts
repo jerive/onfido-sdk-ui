@@ -49,13 +49,8 @@ let LazyAuth: ComponentType<StepComponentProps>
 const SDK_ENV = process.env.SDK_ENV
 
 if (process.env.SDK_ENV === 'Auth') {
-  try {
-    import(/* webpackChunkName: "authLazy" */ '../Auth/Lazy')
-      .then((lazy) => (LazyAuth = lazy.default))
-      .catch(() => null)
-  } catch (e) {
-    console.log('there was an error')
-  }
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  LazyAuth = require('../Auth/Lazy').default
 }
 
 type ComponentsByStepType = Partial<

@@ -310,14 +310,7 @@ const configDist = () => ({
     chunkIds: 'named',
     splitChunks: {
       cacheGroups: {
-        defaultVendors: {
-          test: /[\\/]node_modules[\\/]/,
-          priority: -10,
-          name: (_module, chunks) => {
-            return `vendors~${chunks[0].name}`
-          },
-          reuseExistingChunk: true,
-        },
+        defaultVendors: false,
       },
     },
     minimizer: [
