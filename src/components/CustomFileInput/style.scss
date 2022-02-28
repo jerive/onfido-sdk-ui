@@ -8,7 +8,7 @@
   left: 0;
   /* This input should always be hidden.
   Highest specificity added to prevent the host app from overriding this style by mistake */
-  display: none !important;
+  // display: none !important;
   position: absolute;
   right: 0;
   top: 0;

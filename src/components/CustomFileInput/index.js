@@ -24,12 +24,11 @@ class CustomFileInput extends Component {
   input
 
   handleClick = () => {
-    // alert(!!this.input?.click)
+    console.log('handleClick', this.input.dispatchEvent(new Event('click')))
     if (this.input) {
-      // this.input.click()
-      // this.input.click()
+      this.input.click()
     }
-    // this.props.onClick()
+    this.props.onClick()
   }
 
   handleChange = (event) => {
@@ -41,30 +40,46 @@ class CustomFileInput extends Component {
 
   hasPermission = false
 
-  beforeClick = () => {
-    if(this.hasPermission){ 
-      this.handleClick()
-      return
-    }
+  askPermission = () => {
+    console.log('beforeClick')
+    // if(this.hasPermission){ 
+    //   this.handleClick()
+    //   return
+    // }
     // alert('gainPermissions')
-
+    // this.handleClick()
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then(() => {
+        console.log('gained permission')
         this.hasPermission = true
         // alert('access')
-        this.handleClick()
+        setTimeout(() => {
+          this.handleClick()
+        }, 1000)
+        // this.input.click()
       })
       .catch((e) => {
+        console.log('error permissons')
         alert(e.message)
       })
+  }
+
+  onInputClick = (e) => {
+    if (!this.hasPermission) {
+      e.preventDefault()
+
+      this.askPermission()
+      return
+    }
+    
   }
 
   render = () => {
     const { children, className, onClick, onChange, ...other } = this.props // eslint-disable-line no-unused-vars
     return (
       <span
-        onClick={this.beforeClick}
+        // onClick={this.beforeClick}
         className={classNames(style.container, className)}
       >
         {children}
@@ -73,6 +88,7 @@ class CustomFileInput extends Component {
           className={style.input}
           ref={(ref) => (this.input = ref)}
           onChange={this.handleChange}
+          onClick={this.onInputClick}
           {...other}
         />
       </span>
